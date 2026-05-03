@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sin Studio — Music</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a; --surface: #111; --border: #1e1e1e;
+    --accent: #c8ff00; --text: #f0f0f0; --muted: #555;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; }
+  header { max-width:760px; margin:0 auto; padding:2rem 1.5rem 0; }
+  h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(3rem,10vw,5.5rem); letter-spacing:.04em; line-height:1; }
+  h1 span { color:var(--accent); }
+  .sub { font-size:.75rem; color:var(--muted); letter-spacing:.15em; text-transform:uppercase; margin-top:.2rem; }
+
+  .np { max-width:760px; margin:1.8rem auto 0; padding:0 1.5rem; }
+  .npc { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.2rem 1.4rem; display:flex; flex-direction:column; gap:.9rem; }
+  .npt { display:flex; align-items:center; gap:.9rem; }
+  .art { width:48px; height:48px; border-radius:8px; background:#1a1a1a; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+  .meta { flex:1; min-width:0; }
+  .mtitle { font-size:.95rem; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mart { font-size:.75rem; color:var(--muted); margin-top:2px; }
+  .vw { display:flex; align-items:center; gap:.4rem; flex-shrink:0; }
+  .vw svg { color:var(--muted); }
+  input[type=range].v { -webkit-appearance:none; appearance:none; width:70px; height:3px; background:var(--border); border-radius:99px; outline:none; cursor:pointer; }
+  input[type=range].v::-webkit-slider-thumb { -webkit-appearance:none; width:11px; height:11px; background:var(--text); border-radius:50%; }
+
+  .pw { display:flex; align-items:center; gap:.7rem; }
+  .tl { font-size:.7rem; color:var(--muted); font-variant-numeric:tabular-nums; width:2.6rem; flex-shrink:0; }
+  .tl.r { text-align:right; }
+  .pb { flex:1; height:4px; background:var(--border); border-radius:99px; cursor:pointer; position:relative; }
+  .pf { height:100%; background:var(--accent); border-radius:99px; width:0%; transition:width .1s linear; position:relative; }
+  .pf::after { content:''; position:absolute; right:-5px; top:50%; transform:translateY(-50%); width:10px; height:10px; background:var(--accent); border-radius:50%; opacity:0; transition:opacity .15s; }
+  .pb:hover .pf::after { opacity:1; }
+
+  .ctrl { display:flex; align-items:center; justify-content:center; gap:1rem; }
+  .cb { background:none; border:none; color:var(--muted); cursor:pointer; padding:5px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:color .15s,transform .1s; }
+  .cb:hover { color:var(--text); }
+  .cb:active { transform:scale(.9); }
+  .cb.on { color:var(--accent); }
+  .pb2 { width:46px; height:46px; background:var(--accent); border:none; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#000; transition:transform .15s; }
+  .pb2:hover { transform:scale(1.07); }
+  .pb2:active { transform:scale(.95); }
+
+  .sw { max-width:760px; margin:1.4rem auto 0; padding:0 1.5rem; }
+  .si { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:.6rem 1rem; color:var(--text); font-family:'DM Sans',sans-serif; font-size:.85rem; outline:none; }
+  .si::placeholder { color:var(--muted); }
+  .si:focus { border-color:#333; }
+
+  .tlw { max-width:760px; margin:.8rem auto 3rem; padding:0 1.5rem; }
+  .tlh { display:grid; grid-template-columns:2rem 1fr auto; gap:1rem; padding:0 .7rem .5rem; font-size:.68rem; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); border-bottom:1px solid var(--border); }
+  .tr { display:grid; grid-template-columns:2rem 1fr auto; gap:1rem; align-items:center; padding:.65rem .7rem; border-radius:8px; cursor:pointer; transition:background .12s; }
+  .tr:hover { background:var(--surface); }
+  .tr.active { background:#121500; }
+  .tr.active .tn, .tr.active .tin { color:var(--accent); }
+  .tn { font-size:.78rem; color:var(--muted); text-align:center; font-variant-numeric:tabular-nums; }
+  .eq { display:none; gap:2px; align-items:flex-end; height:13px; justify-content:center; }
+  .tr.active.playing .eq { display:flex; }
+  .tr.active.playing .tnv { display:none; }
+  .eq span { width:3px; background:var(--accent); border-radius:1px; animation:eqa .8s ease infinite; }
+  .eq span:nth-child(1) { height:5px; animation-delay:0s; }
+  .eq span:nth-child(2) { height:11px; animation-delay:.15s; }
+  .eq span:nth-child(3) { height:7px; animation-delay:.3s; }
+  @keyframes eqa { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(.25)} }
+  .ti { min-width:0; }
+  .tin { font-size:.88rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tif { font-size:.7rem; color:var(--muted); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .td { font-size:.78rem; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .nr { text-align:center; padding:2rem 0; color:var(--muted); font-size:.85rem; display:none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SIN <span>STUDIO</span></h1>
+  <p class="sub">Music</p>
+</header>
+
+<div class="np">
+  <div class="npc">
+    <div class="npt">
+      <div class="art" id="art">🎵</div>
+      <div class="meta">
+        <div class="mtitle" id="mtitle">Select a track</div>
+        <div class="mart">Sin Studio</div>
+      </div>
+      <div class="vw">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+        <input type="range" class="v" id="vol" min="0" max="1" step="0.02" value="0.8">
+      </div>
+    </div>
+    <div class="pw">
+      <span class="tl" id="ct">0:00</span>
+      <div class="pb" id="pb"><div class="pf" id="pf"></div></div>
+      <span class="tl r" id="tt">0:00</span>
+    </div>
+    <div class="ctrl">
+      <button class="cb" id="bShuffle" title="Shuffle">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+          <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
+        </svg>
+      </button>
+      <button class="cb" id="bPrev">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/>
+        </svg>
+      </button>
+      <button class="pb2" id="bPlay">
+        <svg id="iPlay" width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <svg id="iPause" width="19" height="19" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      </button>
+      <button class="cb" id="bNext">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/>
+        </svg>
+      </button>
+      <button class="cb" id="bLoop" title="Loop">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+          <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="sw"><input class="si" id="search" type="text" placeholder="Search tracks…"></div>
+
+<div class="tlw">
+  <div class="tlh"><span>#</span><span>Title</span><span>—</span></div>
+  <div id="tl"></div>
+  <div class="nr" id="nr">No tracks found.</div>
+</div>
+
+<audio id="audio"></audio>
+
+<script>
+const TRACKS = [
+  "Inspired by Hell hounds.mp3",
+  "Bluff-Call Trance.mp3",
+  "Nonverbal Grace.mp3",
+  "Wan's Grace.mp3",
+  "Nonverbal Face.mp3",
+  "Block Stranger Chat2.mp3",
+  "Block Stranger Chat.mp3",
+  "Gumdrop Thunder.mp3",
+  "Concrete Syncopation.mp3",
+  "Scam Fighters1.mp3",
+  "Scam Fighters.mp3",
+  "Safewords Away.mp3",
+  "Priest Lease Beast.mp3",
+  "Fake Disguises.mp3",
+  "Basement Residue.mp3",
+  "Snacking Souls2.mp3",
+  "Snacking Souls.mp3",
+  "Beast Trance.mp3",
+  "234pidgin.mp3",
+  "Wetin Go Make.mp3",
+  "Demon-Scented Love.mp3",
+  "Inspired by Demon scented.mp3",
+  "Be Positive Tried1.mp3",
+  "Be Positive Tried.mp3",
+  "2bright.mp3",
+  "Write (1).mp3",
+  "Write.mp3",
+  "Salt Moths.mp3",
+  "Grind No Pay.mp3",
+  "Freedom No Set1.mp3",
+  "Freedom No Set.mp3",
+  "Accountability Dey.mp3",
+  "Ass Shit Heat.mp3",
+  "Pussies these day.mp3",
+  "Positive Barless2.mp3",
+  "Positive Barless.mp3",
+  "Soul.mp3",
+  "2play.mp3",
+  "Salt Saltworks.mp3",
+  "322244.mp3",
+  "Imposter (1).mp3",
+  "Hard Days.mp3",
+  "Pidgin.mp3",
+  "Stars' Night-Sign2.mp3",
+  "Stars' Night-Sign.mp3",
+  "Inspired by Im.mp3",
+  "Imposter5322pidgin.mp3",
+  "Dream pidgin.mp3",
+  "Imposter.mp3",
+  "Imposter E565ntity.mp3",
+  "Imposter Entity.mp3",
+  "Inspired by35 Dream.mp3",
+  "Inspired by Dre3am1.mp3",
+  "Inspired by Dream (1).mp3",
+  "Inspired by Dream.mp3",
+  "Yup1.mp3",
+  "Yup.mp3",
+  "Walking Blind.mp3",
+  "Inspired by Silence1.mp3",
+  "Inspired by Complexities3.mp3",
+  "Inspired by Complexities (1).mp3",
+  "Inspired by Complexities.mp3",
+  "Tea Kettle Whistling.mp3",
+  "Tea Kettle Whistlers.mp3",
+  "Writ Roster.mp3",
+  "Inspired by Silence5.mp3",
+  "Inspired by Silence.mp3",
+  "Inspired by Ice.mp3",
+  "Devouring Souls (1).mp3",
+  "Second-Guessing Lie (1).mp3",
+  "Devouring Souls.mp3",
+  "Inspired by Games2.mp3",
+  "Inspired by Power.mp3",
+  "Wide Open (1).mp3",
+  "Wide Open.mp3",
+  "Inspired by Quiet.mp3",
+  "Erasing Traces (1).mp3",
+  "Shower Breakdown.mp3",
+  "Erasing Traces.mp3",
+  "Stressin.mp3",
+  "Inspired by Games.mp3",
+  "Integrity Mismatch.mp3",
+  "Integrity 2.mp3",
+  "Integrity 1.mp3",
+  "Integrity and.mp3",
+  "Inspired by Mine23.mp3",
+  "Inspired by Mine123.mp3",
+  "Inspired by min2.mp3",
+  "Halo Texts1.mp3",
+  "Halo Texts.mp3",
+  "Inspired by mine (2).mp3",
+  "Inspired by min1.mp3",
+  "Inspired by mine (1).mp3",
+  "Inspired by mine.mp3",
+  "Dagger Moonlit.mp3",
+  "Feast Text.mp3",
+  "Split Equator (1).mp3",
+  "Midnight Lungs Smoke1.mp3"
+];
+
+function clean(f){ return f.replace(/\.(mp3|wav)$/i,''); }
+function fmt(s){ if(!s||isNaN(s))return'—'; return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'); }
+
+const audio=document.getElementById('audio');
+const bPlay=document.getElementById('bPlay');
+const iPlay=document.getElementById('iPlay');
+const iPause=document.getElementById('iPause');
+const bPrev=document.getElementById('bPrev');
+const bNext=document.getElementById('bNext');
+const bShuffle=document.getElementById('bShuffle');
+const bLoop=document.getElementById('bLoop');
+const pb=document.getElementById('pb');
+const pf=document.getElementById('pf');
+const ct=document.getElementById('ct');
+const tt=document.getElementById('tt');
+const vol=document.getElementById('vol');
+const mtitle=document.getElementById('mtitle');
+const tl=document.getElementById('tl');
+const search=document.getElementById('search');
+const nr=document.getElementById('nr');
+
+let cur=-1, playing=false, shuffle=false, loop=false;
+let dur=new Array(TRACKS.length).fill(0);
+
+function render(){
+  const q=search.value.toLowerCase();
+  const f=TRACKS.map((_,i)=>i).filter(i=>clean(TRACKS[i]).toLowerCase().includes(q));
+  tl.innerHTML='';
+  nr.style.display=f.length===0?'block':'none';
+  f.forEach((ti,vi)=>{
+    const r=document.createElement('div');
+    r.className='tr'+(ti===cur?' active'+(playing?' playing':''):'');
+    r.innerHTML=`<div class="tn"><div class="eq"><span></span><span></span><span></span></div><span class="tnv">${vi+1}</span></div><div class="ti"><div class="tin">${clean(TRACKS[ti])}</div><div class="tif">${TRACKS[ti]}</div></div><div class="td">${dur[ti]?fmt(dur[ti]):'—'}</div>`;
+    r.addEventListener('click',()=>load(ti,true));
+    tl.appendChild(r);
+  });
+}
+
+function load(i,auto=false){
+  cur=i;
+  audio.src='audio/'+TRACKS[i];
+  audio.volume=parseFloat(vol.value);
+  mtitle.textContent=clean(TRACKS[i]);
+  pf.style.width='0%';
+  ct.textContent='0:00';
+  tt.textContent=dur[i]?fmt(dur[i]):'0:00';
+  render();
+  if(auto){audio.play();setP(true);}
+}
+
+function setP(s){
+  playing=s;
+  iPlay.style.display=s?'none':'block';
+  iPause.style.display=s?'block':'none';
+  render();
+}
+
+function next(){
+  if(!TRACKS.length)return;
+  const i=shuffle?Math.floor(Math.random()*TRACKS.length):(cur<TRACKS.length-1?cur+1:0);
+  load(i,true);
+}
+
+bPlay.addEventListener('click',()=>{
+  if(cur===-1){load(0,true);return;}
+  if(playing){audio.pause();setP(false);}else{audio.play();setP(true);}
+});
+bNext.addEventListener('click',next);
+bPrev.addEventListener('click',()=>{
+  if(audio.currentTime>3){audio.currentTime=0;return;}
+  load(cur>0?cur-1:TRACKS.length-1,playing);
+});
+bShuffle.addEventListener('click',()=>{shuffle=!shuffle;bShuffle.classList.toggle('on',shuffle);});
+bLoop.addEventListener('click',()=>{loop=!loop;bLoop.classList.toggle('on',loop);});
+
+audio.addEventListener('timeupdate',()=>{
+  if(!audio.duration)return;
+  pf.style.width=(audio.currentTime/audio.duration*100)+'%';
+  ct.textContent=fmt(audio.currentTime);
+});
+audio.addEventListener('loadedmetadata',()=>{
+  tt.textContent=fmt(audio.duration);
+  if(cur>=0){dur[cur]=audio.duration;render();}
+});
+audio.addEventListener('ended',()=>{ if(loop){audio.play();}else{setP(false);next();} });
+
+pb.addEventListener('click',e=>{
+  if(!audio.duration)return;
+  const r=pb.getBoundingClientRect();
+  audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;
+});
+vol.addEventListener('input',()=>{ audio.volume=parseFloat(vol.value); });
+search.addEventListener('input',render);
+
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  if(e.code==='Space'){e.preventDefault();bPlay.click();}
+  if(e.code==='ArrowRight')audio.currentTime=Math.min(audio.duration||0,audio.currentTime+5);
+  if(e.code==='ArrowLeft')audio.currentTime=Math.max(0,audio.currentTime-5);
+});
+
+render();
+</script>
+</body>
+</html>
